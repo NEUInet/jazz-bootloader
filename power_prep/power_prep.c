@@ -17,7 +17,7 @@
  * memory controller, so applications can be loaded directly to external SDRAM.
  * This work is not done in the ROM, because it is platform dependent.
  */
-
+//
 ////////////////////////////////////////////////////////////////////////////////
 #include "types.h"
 #include "error.h"
@@ -204,7 +204,7 @@ bool IsBattLevelValidForBoot( void )
 //int PowerPrep( void )
 int _start( void )
 {
-	int iRtn = SUCCESS;
+	int iRtn = SUCCESS,i;
 #ifndef mx28
 	HW_DIGCTL_CTRL_SET(BM_DIGCTL_CTRL_USE_SERIAL_JTAG);
 #endif
@@ -213,6 +213,14 @@ int _start( void )
 	PowerPrep_ClearAutoRestart();
 
 	hw_power_SetPowerClkGate( false );
+		i=0;
+              while(i++ < 3)
+			{
+				printf(">");
+				PowerPrep_Delay(200000);
+				printf(">");
+				PowerPrep_Delay(200000);
+			}
 
 	printf("\r\nPowerPrep start initialize power...\r\n");
 	HW_POWER_VDDDCTRL.B.LINREG_OFFSET = HW_POWER_LINREG_OFFSET_STEP_BELOW;
