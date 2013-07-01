@@ -663,16 +663,43 @@ void change_cpu_freq()
 	printf("cpu 0x%x\r\n" , HW_CLKCTRL_CPU_RD());
 
 }
+#define  HW_PINCTRL_MUXSEL3_T (*(volatile reg32_t *) HW_PINCTRL_MUXSEL3_ADDR)
+#define  HW_PINCTRL_DRIVE7_T  (*(volatile reg32_t *) HW_PINCTRL_DRIVE7_ADDR )
+#define  HW_PINCTRL_DOUT1_T   (*(volatile reg32_t *) HW_PINCTRL_DOUT1_ADDR )
+#define  HW_PINCTRL_DOE1_T   (*(volatile unsigned *) HW_PINCTRL_DOE1_ADDR )
+void Buzzer_Delay(unsigned int microSec)
+{
+	unsigned int currentTime = HW_DIGCTL_MICROSECONDS_RD();
+	while ((HW_DIGCTL_MICROSECONDS_RD() - currentTime) <  microSec);
+}
+//pwm4
+void buzzer(void)
+{  int i;
+   //HW_PINCTRL_MUXSEL0_T &= ~(3 << 28);
+    HW_PINCTRL_MUXSEL3_T |= (3 << 28);
+
+   // HW_PINCTRL_DRIVE1_T &= ~(3 << 24);
+    HW_PINCTRL_DRIVE7_T |= (1 << 24);
+
+    HW_PINCTRL_DOUT1_T |= (1 << 30);
+    HW_PINCTRL_DOE1_T |= (1 << 30);
+    
+    HW_PINCTRL_DOUT1_T |= (1 << 30);
+    Buzzer_Delay(300*1000);
+    HW_PINCTRL_DOUT1_T &=(!(1 << 30));
+    
+ 
+}
 int _start(int arg)
 {
 	unsigned int value;
 	volatile int *pTest = 0x40000000;
-	unsigned int CE = 0x1;
+	unsigned int CE = 0x03;
 	int i;
-
 	printf(__DATE__ __TIME__);
+        buzzer();
 	printf("\r\n");
-	/*printf("Fuse 0x%x\r\n",HW_OCOTP_CUSTCAP_RD());*/
+	printf("Fuse 0x%x\r\n",HW_OCOTP_CUSTCAP_RD());
 	if ((HW_OCOTP_CUSTCAP_RD() & 0x30000000) > 0) {
 		/*EVK board*/
 		printf("EVK board\r\n");
