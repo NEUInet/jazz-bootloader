@@ -60,8 +60,9 @@ all: power_prep
 %.o: %.arm
 	$(CC) -c $(CFLAGS) -D__ASSEMBLY__ -o $@ $<
 
+#PressDelay : the wait time of system start,units:0.5s
 %.o: %.c
-	$(CC) -c $(CFLAGS) -o $@ $<
+	$(CC) -c $(CFLAGS) -DPressDelay=4 -o $@ $<
 
 
 

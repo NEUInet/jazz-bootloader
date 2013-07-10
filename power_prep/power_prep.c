@@ -214,12 +214,15 @@ int _start( void )
 
 	hw_power_SetPowerClkGate( false );
 		i=0;
-              while(i++ < 3)
+#ifndef PressDelay	//system start wait time (unit:0.5s)
+#define PressDelay 2	//wait 1s
+#endif
+              while(i++ < PressDelay)
 			{
 				printf(">");
-				PowerPrep_Delay(200000);
+				PowerPrep_Delay(250000); //200000microsec
 				printf(">");
-				PowerPrep_Delay(200000);
+				PowerPrep_Delay(250000);
 			}
 
 	printf("\r\nPowerPrep start initialize power...\r\n");
