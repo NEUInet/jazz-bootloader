@@ -1,0 +1,4 @@
+init-mx23.o: In function `_start':
+/home/liwenzhang/Work/imxbootlets/boot_prep/init-mx23.c:776: undefined reference to `hw_core_EnableFiqInterrupt'
+make[1]: *** [boot_prep] Error 1
+make: *** [boot_prep] Error 2

@@ -62,7 +62,7 @@ all: power_prep
 
 #PressDelay : the wait time of system start,units:0.5s
 %.o: %.c
-	$(CC) -c $(CFLAGS) -DPressDelay=4 -o $@ $<
+	$(CC) -c $(CFLAGS) -DPressDelay=2 -o $@ $<
 
 
 
