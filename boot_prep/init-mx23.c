@@ -691,6 +691,263 @@ void buzzer(void)
  
 }
 
+#define  HW_PINCTRL_MUXSEL4_T (*(volatile reg32_t *) HW_PINCTRL_MUXSEL4_ADDR)
+#define  HW_PINCTRL_DRIVE8_T  (*(volatile reg32_t *) HW_PINCTRL_DRIVE8_ADDR )
+#define  HW_PINCTRL_DOUT2_T   (*(volatile reg32_t *) HW_PINCTRL_DOUT2_ADDR )
+#define  HW_PINCTRL_DOE2_T   (*(volatile unsigned *) HW_PINCTRL_DOE2_ADDR )
+
+#define  HW_PINCTRL_DRIVE6_T  (*(volatile reg32_t *) HW_PINCTRL_DRIVE6_ADDR )
+
+#define LCD_SDO_1	HW_PINCTRL_DOUT2_T	|= 1<<0
+#define LCD_SDI_1	HW_PINCTRL_DOUT2_T	|= 1<<2
+#define LCD_SCK_1	HW_PINCTRL_DOUT2_T	|= 1<<6
+#define LCD_CS_1	HW_PINCTRL_DOUT2_T	|= 1<<5
+
+#define LCD_RESET_1	HW_PINCTRL_DOUT1_T	|= 1<<18
+
+
+#define LCD_SDO_0	HW_PINCTRL_DOUT2_T &=(!(1 << 0))
+#define LCD_SDI_0	HW_PINCTRL_DOUT2_T &=(!(1 << 2))
+#define LCD_SCK_0	HW_PINCTRL_DOUT2_T &=(!(1 << 6))
+#define LCD_CS_0	HW_PINCTRL_DOUT2_T &=(!(1 << 5))
+
+#define LCD_RESET_0	HW_PINCTRL_DOUT1_T &=(!(1 << 18))
+
+#define u8 unsigned char
+#define u16 unsigned int
+#define u32 unsigned long
+void initLCD_IO(void)
+{
+    //spi_di	SSP1_CMD:SPI1_MOSI	->	BANK2_PIN00
+    //spi_do	SSP1_DATA0:SPI1_MIS	->	BANK2_PIN02
+    //spi_clk	SSP1_SCK:SPI1_SCK	->	BANK2_PIN06
+    //spi_cs	SSP1_DATA3:SPI1_SS	->	BANK2_PIN05
+
+    //reset 	LCD_RESET       	->	BANK1_PIN18
+
+
+
+    HW_PINCTRL_MUXSEL4_T |= 3<<0;		//BANK2_PIN00
+    HW_PINCTRL_DRIVE8_T |= 1<<0;		//8mA
+    HW_PINCTRL_DOUT2_T |= 1<<0;
+    HW_PINCTRL_DOE2_T |= 1<<0;
+
+
+    HW_PINCTRL_MUXSEL4_T |= 3<<4;		//BANK2_PIN02
+    HW_PINCTRL_DRIVE8_T |= 1<<8;		//8mA
+    HW_PINCTRL_DOUT2_T |= 1<<2;
+    HW_PINCTRL_DOE2_T |= 1<<2;
+
+    HW_PINCTRL_MUXSEL4_T |= 3<<12;		//BANK2_PIN06
+    HW_PINCTRL_DRIVE8_T |= 1<<24;		//8mA
+    HW_PINCTRL_DOUT2_T |= 1<<6;
+    HW_PINCTRL_DOE2_T |= 1<<6;
+
+    HW_PINCTRL_MUXSEL4_T |= 3<<10;		//BANK2_PIN05
+    HW_PINCTRL_DRIVE8_T |= 1<<20;		//8mA
+    HW_PINCTRL_DOUT2_T |= 1<<5;
+    HW_PINCTRL_DOE2_T |= 1<<5;
+
+
+    HW_PINCTRL_MUXSEL3_T |= 3<<4;		//BANK1_PIN18
+    HW_PINCTRL_DRIVE6_T |= 1<<8;		//8mA
+    HW_PINCTRL_DOUT1_T |= 1<<18;
+    HW_PINCTRL_DOE1_T |= 1<<18;
+
+/*
+    while(1)
+    {
+
+
+        printf("test 1111111111111111\r\n");
+    HW_PINCTRL_DOUT2_T |= 1<<0;
+    HW_PINCTRL_DOUT2_T |= 1<<2;
+    HW_PINCTRL_DOUT2_T |= 1<<6;
+    HW_PINCTRL_DOUT2_T |= 1<<5;
+
+    HW_PINCTRL_DOUT1_T |= (1 << 30);//buzz
+
+
+delay(1*1000*1000);
+        printf("test 0000000000000000\r\n");
+    HW_PINCTRL_DOUT2_T &= (~(1 << 0));
+    HW_PINCTRL_DOUT2_T &= (~(1 << 2));
+    HW_PINCTRL_DOUT2_T &= (~(1 << 6));
+    HW_PINCTRL_DOUT2_T &= (~(1 << 5));
+
+
+    HW_PINCTRL_DOUT1_T &=(~(1 << 30));//buzz
+
+    delay(1*1000*1000);
+
+    }
+*/
+
+}
+
+/*
+void delay1(int v)
+{
+    delay(v);
+ //   while(v--)delay(3);
+}
+*/
+void TFT_SPI_Write_Byte(u8 da)
+{
+    u8 i;
+    for(i=0;i<8;i++)
+    {
+//        delay1(1);
+        LCD_SCK_0;
+//        delay1(1);
+        if(da&0x80)
+            LCD_SDO_1;
+        else
+            LCD_SDO_0;
+        da <<= 1;
+//        delay1(1);
+        LCD_SCK_1;
+    }
+}
+void LCD_RegisterIndex(u8 CMD)
+{
+  //      delay1(1);
+        LCD_CS_0;       //  delay1(1);
+        LCD_SCK_0;      //  delay1(1);
+        LCD_SDO_0;      //  delay1(1);
+        LCD_SCK_1;      //  delay1(1);
+        TFT_SPI_Write_Byte(CMD);      //  delay1(1);
+        LCD_CS_1;
+
+}
+
+void LCD_RegisterValue(u8 DATA)
+{
+//    delay1(1);
+    LCD_CS_0;     //  delay1(1);
+    LCD_SCK_0;    //  delay1(1);
+    LCD_SDO_1;    //  delay1(1);
+    LCD_SCK_1;    //  delay1(1);
+    TFT_SPI_Write_Byte(DATA);      //  delay1(1);
+    LCD_CS_1;
+}
+u32 LCD_Read(u8 count)
+{
+    u8 i;
+    u32 ret = 0;
+    LCD_CS_0;
+    LCD_SCK_0;
+    for(i=0;i<8*count;i++)
+    {
+
+        LCD_SCK_0;
+        ret <<= 1;
+//        if(GPIO_ReadInputDataBit(io_sdi.gpio,io_sdi.pin))
+            ret |= 1;
+        LCD_SCK_1;
+    }
+    LCD_CS_1;
+    return ret;
+}
+
+#define LCD_WR_REG(d) LCD_RegisterIndex(d)
+#define LCD_WR_DATA(d) LCD_RegisterValue(d)
+void initLCD_Para(void);
+void initLCD_Para2(void);
+//设置光标位置
+//Xpos:横坐标
+//Ypos:纵坐标
+void LCD_SetCursor(u16 Xpos, u16 Ypos)
+{
+    LCD_WR_REG(0x2A);
+    LCD_WR_DATA(Xpos>>8);
+  LCD_WR_DATA(0xFF&Xpos);				 //设定X坐标
+
+  LCD_WR_REG(0x2B);
+    LCD_WR_DATA(Ypos>>8);
+  LCD_WR_DATA(0xFF&Ypos);				 //设定Y坐标
+
+}
+
+
+
+    //画笔颜色
+#define WHITE         	 0xFFFF
+#define BLACK         	 0x0000
+#define BLUE         	 0x001F
+#define BRED             0XF81F
+#define GRED 			 0XFFE0
+#define GBLUE			 0X07FF
+#define RED           	 0xF800
+#define MAGENTA       	 0xF81F
+#define GREEN         	 0x07E0
+#define CYAN          	 0x7FFF
+#define YELLOW        	 0xFFE0
+#define BROWN 			 0XBC40 //棕色
+#define BRRED 			 0XFC07 //棕红色
+#define GRAY  			 0X8430 //灰色
+
+u16 colorTab[]={WHITE,BLUE,BRED,GRED,GBLUE,RED,MAGENTA,GREEN,CYAN,YELLOW,BROWN,BRRED,GRAY};
+void testLCD(void)
+{
+    u16 j = 0;
+    u32 index=0;
+    u16 color;
+    u16 colorIndex = 1;
+    printf("tttttttttttt --- 1  \r\n");
+    printf("tttttttttttt --- 2  \r\n");
+//    while(1)
+    {
+        printf("tttttttttttt --- 3  \r\n");
+        LCD_SetCursor(0x0000,0x0000);//设置光标位置
+        LCD_WR_REG(0X2C);
+
+        for(j=0;j<240;j++)
+        {
+            color = colorTab[j/30];
+            for(index=0;index<320;index++)
+            {
+                LCD_WR_DATA(color>>8);
+                LCD_WR_DATA(color);
+            }
+        }
+
+        if(++colorIndex>sizeof(colorTab)/sizeof(int))
+            colorIndex = 0;
+
+        printf("-------------------index = %d \r\n",index);
+    //    delayMs(2000);
+    }
+
+
+}
+void testLCD2()
+{
+    u32 index=0;
+    u16 color;
+    u16 colorIndex = 0;
+    while(1)
+    {
+//        LCD_WR_REG(0x28);
+
+        LCD_SetCursor(0x0000,0x0000);//设置光标位置
+        LCD_WR_REG(0X2C);
+        color = colorTab[colorIndex];
+        for(index=0;index<320*240;index++)
+        {
+            LCD_WR_DATA(color>>8);
+            LCD_WR_DATA(color);
+        }
+
+            LCD_WR_REG(0x29);
+        if(++colorIndex>sizeof(colorTab)/sizeof(int))
+            colorIndex = 0;
+//        printf("-------------------colorIndex = %d \r\n",colorIndex);
+//        printf("-------------------color ====== %x \r\n",color);
+        delayMs(2000);
+    }
+}
+
 int _start(int arg)
 {
 	unsigned int value;
@@ -700,7 +957,13 @@ int _start(int arg)
 	printf(__DATE__ __TIME__);
         buzzer();
 	printf("\r\n");
-	printf("Fuse 0x%x\r\n",HW_OCOTP_CUSTCAP_RD());
+    printf("Fuse 0x%x\r\n",HW_OCOTP_CUSTCAP_RD());
+
+    initLCD_IO();
+    initLCD_Para();
+//    initLCD_Para2();
+//    testLCD();
+//    testLCD2();
 	if ((HW_OCOTP_CUSTCAP_RD() & 0x30000000) > 0) {
 		/*EVK board*/
 		printf("EVK board\r\n");
@@ -798,6 +1061,8 @@ printf("init_mddr_mt46h32m16lf_133Mhz\r\n");
 		pTest++;
 	}
 #endif
+
+
 	return 0;
 }
 #define HW_PINCTRL_MUXSEL0_T  (* (volatile unsigned *) 0x80018100) 	
@@ -833,6 +1098,322 @@ void power_enable_gpmi_d15() //auart2_tx
     HW_PINCTRL_DOE0_T |= (1 << 15);
     HW_PINCTRL_DOUT0_T |= (1 << 15);
  
+}
+
+void delayMs(int ms)
+{
+    delay(ms*1000);
+}
+
+void initLCD_Para(void)
+{
+
+    LCD_RESET_1;
+    LCD_SCK_1;
+    LCD_SDI_1;
+    LCD_SDO_1;
+    LCD_CS_1;
+
+    delayMs(2);
+    LCD_RESET_1;
+    delayMs(20);
+    LCD_RESET_0;
+    delayMs(10);
+    LCD_RESET_1;
+    delayMs(220);
+
+    printf("tttttttttttt --- 8  \r\n");
+    LCD_RegisterIndex(0x11);    // 退出睡眠模式
+//        Delay(120);
+    delayMs(500);
+
+    printf("tttttttttttt --- 9  \r\n");
+    LCD_WR_REG(0xCF);
+        LCD_WR_DATA(0x00);
+        LCD_WR_DATA(0xC1);
+        LCD_WR_DATA(0X30);
+        LCD_WR_REG(0xED);
+        LCD_WR_DATA(0x64);
+        LCD_WR_DATA(0x03);
+        LCD_WR_DATA(0X12);
+        LCD_WR_DATA(0X81);
+        LCD_WR_REG(0xE8);
+        LCD_WR_DATA(0x85);
+        LCD_WR_DATA(0x10);
+        LCD_WR_DATA(0x7A);
+        LCD_WR_REG(0xCB);
+        LCD_WR_DATA(0x39);
+        LCD_WR_DATA(0x2C);
+        LCD_WR_DATA(0x00);
+        LCD_WR_DATA(0x34);
+        LCD_WR_DATA(0x02);
+        LCD_WR_REG(0xF7);
+        LCD_WR_DATA(0x20);
+        LCD_WR_REG(0xEA);
+        LCD_WR_DATA(0x00);
+        LCD_WR_DATA(0x00);
+        LCD_WR_REG(0xC0);    //Power control
+        LCD_WR_DATA(0x1B);   //VRH[5:0]
+        LCD_WR_REG(0xC1);    //Power control
+        LCD_WR_DATA(0x01);   //SAP[2:0];BT[3:0]
+        LCD_WR_REG(0xC5);    //VCM control
+        LCD_WR_DATA(0x30); 	 //3F
+        LCD_WR_DATA(0x30); 	 //3C
+        LCD_WR_REG(0xC7);    //VCM control2
+        LCD_WR_DATA(0XB7);
+
+        LCD_WR_REG(0x36);    // Memory Access Control
+        LCD_WR_DATA(0x08);
+
+        LCD_WR_REG(0x3A);
+        LCD_WR_DATA(0x55);
+
+        LCD_WR_REG(0xB1);
+        LCD_WR_DATA(0x00);
+        LCD_WR_DATA(0x1A);
+
+        LCD_WR_REG(0xB6);    // Display Function Control
+        LCD_WR_DATA(0x0A);
+        LCD_WR_DATA(0xA2);
+
+        LCD_WR_REG(0xF2);    // 3Gamma Function Disable
+        LCD_WR_DATA(0x00);
+        LCD_WR_REG(0x26);    //Gamma curve selectednto GR
+        LCD_WR_DATA(0x01);
+
+        LCD_WR_REG(0xE0);    //Set Gamma
+        LCD_WR_DATA(0x0F);
+        LCD_WR_DATA(0x2A);
+        LCD_WR_DATA(0x28);
+        LCD_WR_DATA(0x08);
+        LCD_WR_DATA(0x0E);
+        LCD_WR_DATA(0x08);
+        LCD_WR_DATA(0x54);
+        LCD_WR_DATA(0XA9);
+        LCD_WR_DATA(0x43);
+        LCD_WR_DATA(0x0A);
+        LCD_WR_DATA(0x0F);
+        LCD_WR_DATA(0x00);
+        LCD_WR_DATA(0x00);
+        LCD_WR_DATA(0x00);
+        LCD_WR_DATA(0x00);
+
+        LCD_WR_REG(0XE1);    //Set Gamma
+        LCD_WR_DATA(0x00);
+        LCD_WR_DATA(0x15);
+        LCD_WR_DATA(0x17);
+        LCD_WR_DATA(0x07);
+        LCD_WR_DATA(0x11);
+        LCD_WR_DATA(0x06);
+        LCD_WR_DATA(0x2B);
+        LCD_WR_DATA(0x56);
+        LCD_WR_DATA(0x3C);
+        LCD_WR_DATA(0x05);
+        LCD_WR_DATA(0x10);
+        LCD_WR_DATA(0x0F);
+        LCD_WR_DATA(0x3F);
+        LCD_WR_DATA(0x3F);
+        LCD_WR_DATA(0x0F);
+
+
+        LCD_WR_REG(0xf6);//
+        LCD_WR_DATA(0x01);
+        LCD_WR_DATA(0x00);
+        LCD_WR_DATA(0x06);
+
+        LCD_WR_REG(0xB0);//
+        LCD_WR_DATA(0xe0);//
+
+        LCD_WR_REG(0x2A);
+        LCD_WR_DATA(0x00);
+        LCD_WR_DATA(0x00);
+        LCD_WR_DATA(0x00);
+        LCD_WR_DATA(0xef);
+        LCD_WR_REG(0x2B);
+        LCD_WR_DATA(0x00);
+        LCD_WR_DATA(0x00);
+        LCD_WR_DATA(0x01);
+        LCD_WR_DATA(0x3f);
+
+        LCD_WR_REG(0x11); //Exit Sleep
+//        msleep(120);
+        delayMs(120);
+        printf("tttttttttttt --- b  \r\n");
+        LCD_WR_REG(0x29); //display on
+
+}
+
+//#define LCD_RegisterIndex LCD_WR_REG
+//#define LCD_RegisterValue LCD_WR_DATA
+void initLCD_Para2()
+{
+
+    LCD_RESET_1;
+    LCD_SCK_1;
+    LCD_SDI_1;
+    LCD_SDO_1;
+    LCD_CS_1;
+
+    delayMs(2);
+    LCD_RESET_1;
+    delayMs(20);
+    LCD_RESET_0;
+    delayMs(10);
+    LCD_RESET_1;
+    delayMs(220);
+
+    printf("tttttttttttt --- 8  \r\n");
+    LCD_RegisterIndex(0x11);    // 退出睡眠模式
+//        Delay(120);
+    delayMs(500);
+    LCD_RegisterIndex(0xEF);
+    LCD_RegisterValue(0x03);
+    LCD_RegisterValue(0x80);
+    LCD_RegisterValue(0x02);
+
+    LCD_RegisterIndex(0xCF);
+    LCD_RegisterValue(0x00);
+    LCD_RegisterValue(0xAA);
+    LCD_RegisterValue(0XB0);
+
+    LCD_RegisterIndex(0xED);
+    LCD_RegisterValue(0x64);
+    LCD_RegisterValue(0x03);
+    LCD_RegisterValue(0X12);
+    LCD_RegisterValue(0X81);
+
+    LCD_RegisterIndex(0xE8);
+    LCD_RegisterValue(0x85);
+    LCD_RegisterValue(0x00);
+    LCD_RegisterValue(0x78);
+
+
+    LCD_RegisterIndex(0xCB);
+    LCD_RegisterValue(0x39);
+    LCD_RegisterValue(0x2C);
+    LCD_RegisterValue(0x00);
+    LCD_RegisterValue(0x34);
+    LCD_RegisterValue(0x02);
+
+    LCD_RegisterIndex(0xF7);
+    LCD_RegisterValue(0x20);
+
+    LCD_RegisterIndex(0xEA);
+    LCD_RegisterValue(0x00);
+    LCD_RegisterValue(0x00);
+
+
+    //LCD_RegisterIndex(0xb6);
+    //LCD_RegisterValue(0x0a);
+    //LCD_RegisterValue(0xa2);
+
+    LCD_RegisterIndex(0xC0);       //Power control
+    LCD_RegisterValue(0x26);     //VRH[5:0]
+
+    LCD_RegisterIndex(0xC1);       //Power control
+    LCD_RegisterValue(0x11);     //SAP[2:0];BT[3:0]
+
+    LCD_RegisterIndex(0xC5);       //VCM control
+    LCD_RegisterValue(0x40);
+    LCD_RegisterValue(0x3C);
+
+    LCD_RegisterIndex(0xC7);       //VCM control2
+    LCD_RegisterValue(0xfe);
+
+    LCD_RegisterIndex(0x36);       // Memory Access Control
+    LCD_RegisterValue(0x28);
+
+    LCD_RegisterIndex(0x3A);
+    LCD_RegisterValue(0x55);
+
+    LCD_RegisterIndex(0xB1);       //VCM control
+    LCD_RegisterValue(0x00);
+    LCD_RegisterValue(0x1b);
+
+
+
+    LCD_RegisterIndex(0xf6);
+    LCD_RegisterValue(0x01);
+    LCD_RegisterValue(0x00);
+    LCD_RegisterValue(0x06);
+
+
+    LCD_RegisterIndex(0xB0);
+    LCD_RegisterValue(0xe0); ///Add20110430
+
+
+    LCD_RegisterIndex(0xF2);       // 3Gamma Function Disable
+    LCD_RegisterValue(0x00);
+
+    LCD_RegisterIndex(0x26);       //Gamma curve selected
+    LCD_RegisterValue(0x01);
+
+    LCD_RegisterIndex(0xE0);       //Set Gamma
+    LCD_RegisterValue(0x0F);
+    LCD_RegisterValue(0x1d);
+    LCD_RegisterValue(0x1a);
+    LCD_RegisterValue(0x09);
+    LCD_RegisterValue(0x0f);
+    LCD_RegisterValue(0x09);
+    LCD_RegisterValue(0x46);
+    LCD_RegisterValue(0x88);
+    LCD_RegisterValue(0x39);
+    LCD_RegisterValue(0x05);
+    LCD_RegisterValue(0x0f);
+    LCD_RegisterValue(0x03);
+    LCD_RegisterValue(0x07);
+    LCD_RegisterValue(0x05);
+    LCD_RegisterValue(0x00);
+
+    LCD_RegisterIndex(0XE1);       //Set Gamma
+    LCD_RegisterValue(0x00);
+    LCD_RegisterValue(0x22);
+    LCD_RegisterValue(0x25);
+    LCD_RegisterValue(0x06);
+    LCD_RegisterValue(0x10);
+    LCD_RegisterValue(0x06);
+    LCD_RegisterValue(0x39);
+    LCD_RegisterValue(0x22);
+    LCD_RegisterValue(0x4a);
+    LCD_RegisterValue(0x0a);
+    LCD_RegisterValue(0x10);
+    LCD_RegisterValue(0x0C);
+    LCD_RegisterValue(0x38);
+    LCD_RegisterValue(0x3a);
+    LCD_RegisterValue(0x0F);
+
+
+    LCD_WR_REG(0x2A);
+    LCD_WR_DATA(0x00);
+    LCD_WR_DATA(0x00);
+    LCD_WR_DATA(0x01);
+    LCD_WR_DATA(0x3f);
+    LCD_WR_REG(0x2B);
+    LCD_WR_DATA(0x00);
+    LCD_WR_DATA(0x00);
+    LCD_WR_DATA(0x00);
+    LCD_WR_DATA(0xef);
+
+    delayMs(120);
+    LCD_RegisterIndex(0x11);       //Exit Sleep
+    delayMs(120);
+    LCD_RegisterIndex(0x29);       //Displa
+/*
+    // Write the display data into GRAM here
+    LCD_RegisterIndex(0x2A);
+    LCD_RegisterValue(0x00);
+    LCD_RegisterValue(0x00);
+    LCD_RegisterValue(0x00);
+    LCD_RegisterValue(0xEF);
+
+    LCD_RegisterIndex(0x2B);
+    LCD_RegisterValue(0x00);
+    LCD_RegisterValue(0x00);
+    LCD_RegisterValue(0x01);
+    LCD_RegisterValue(0x3F);
+
+    LCD_RegisterIndex(0x2C); //GRAM start writing
+    */
 }
 
 /* kiss gcc's ass to make it happy */
