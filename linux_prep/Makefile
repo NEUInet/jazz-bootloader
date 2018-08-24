@@ -56,12 +56,12 @@ CMDLINES_STRIP	= $(OUTPUTDIR)/command_lines_stripped.txt
 # separately.
 ifeq ($(BOARD), stmp37xx_dev)
 ARCH = 37xx
-HW_OBJS = $(LRADC_OBJS)
+HW_OBJS = $(LRADC_OBJS) 
 CFLAGS += -DSTMP37XX -DBOARD_STMP37XX_DEV
 endif
 ifeq ($(BOARD), stmp378x_dev)
 ARCH = mx23
-HW_OBJS = $(LRADC_OBJS)
+HW_OBJS = $(LRADC_OBJS) display.o
 CFLAGS += -DSTMP378X -DBOARD_STMP378X_DEV
 endif
 ifeq ($(BOARD), iMX28_EVK)

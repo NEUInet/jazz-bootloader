@@ -792,6 +792,7 @@ void delay1(int v)
  //   while(v--)delay(3);
 }
 */
+
 void TFT_SPI_Write_Byte(u8 da)
 {
     u8 i;
@@ -850,44 +851,30 @@ u32 LCD_Read(u8 count)
     return ret;
 }
 
-#define LCD_WR_REG(d) LCD_RegisterIndex(d)
-#define LCD_WR_DATA(d) LCD_RegisterValue(d)
-void initLCD_Para(void);
-void initLCD_Para2(void);
-//设置光标位置
-//Xpos:横坐标
-//Ypos:纵坐标
-void LCD_SetCursor(u16 Xpos, u16 Ypos)
-{
-    LCD_WR_REG(0x2A);
-    LCD_WR_DATA(Xpos>>8);
-  LCD_WR_DATA(0xFF&Xpos);				 //设定X坐标
 
-  LCD_WR_REG(0x2B);
-    LCD_WR_DATA(Ypos>>8);
-  LCD_WR_DATA(0xFF&Ypos);				 //设定Y坐标
-
-}
 
 
 
     //画笔颜色
-#define WHITE         	 0xFFFF
+#define WHITE         	 0xffff
 #define BLACK         	 0x0000
-#define BLUE         	 0x001F
-#define BRED             0XF81F
-#define GRED 			 0XFFE0
-#define GBLUE			 0X07FF
-#define RED           	 0xF800
-#define MAGENTA       	 0xF81F
-#define GREEN         	 0x07E0
-#define CYAN          	 0x7FFF
-#define YELLOW        	 0xFFE0
-#define BROWN 			 0XBC40 //棕色
-#define BRRED 			 0XFC07 //棕红色
-#define GRAY  			 0X8430 //灰色
+#define BLUE         	 0x001f
+#define BRED             0xf81f
+#define GRED 			 0xffe0
+#define GBLUE			 0x07ff
+#define RED           	 0xf800
+#define MAGENTA       	 0xf81f
+#define GREEN         	 0x07e0
+#define CYAN          	 0x7fff
+#define YELLOW        	 0xffe0
+#define BROWN 			 0xbC40 //棕色
+#define BRRED 			 0xfc07 //棕红色
+#define GRAY  			 0x8430 //灰色
 
+#define LCD_WR_REG(d) LCD_RegisterIndex(d)
+#define LCD_WR_DATA(d) LCD_RegisterValue(d)
 u16 colorTab[]={WHITE,BLUE,BRED,GRED,GBLUE,RED,MAGENTA,GREEN,CYAN,YELLOW,BROWN,BRRED,GRAY};
+/*
 void testLCD(void)
 {
     u16 j = 0;
@@ -896,12 +883,23 @@ void testLCD(void)
     u16 colorIndex = 1;
     printf("tttttttttttt --- 1  \r\n");
     printf("tttttttttttt --- 2  \r\n");
-//    while(1)
+    
+    while(1)
     {
         printf("tttttttttttt --- 3  \r\n");
         LCD_SetCursor(0x0000,0x0000);//设置光标位置
         LCD_WR_REG(0X2C);
 
+       // for(j=0;j<320;j++)
+       // {
+            for(index=0;index<320*240;index++)
+            {
+                LCD_WR_DATA(color_table[pic_index[index]]>>8);
+                LCD_WR_DATA(color_table[pic_index[index]]);
+            }
+       // }
+
+/*
         for(j=0;j<240;j++)
         {
             color = colorTab[j/30];
@@ -914,6 +912,7 @@ void testLCD(void)
 
         if(++colorIndex>sizeof(colorTab)/sizeof(int))
             colorIndex = 0;
+
 
         printf("-------------------index = %d \r\n",index);
     //    delayMs(2000);
@@ -942,16 +941,17 @@ void testLCD2()
             LCD_WR_REG(0x29);
         if(++colorIndex>sizeof(colorTab)/sizeof(int))
             colorIndex = 0;
-//        printf("-------------------colorIndex = %d \r\n",colorIndex);
-//        printf("-------------------color ====== %x \r\n",color);
+        printf("-------------------colorIndex = %d \r\n",colorIndex);
+        printf("-------------------color ====== %x \r\n",color);
         delayMs(2000);
     }
 }
+*/
 
 int _start(int arg)
 {
 	unsigned int value;
-	volatile int *pTest = 0x40000000;
+	//volatile int *pTest = 0x40000000;
 	unsigned int CE = 0x03;
 	int i;
 	printf(__DATE__ __TIME__);
@@ -959,10 +959,11 @@ int _start(int arg)
 	printf("\r\n");
     printf("Fuse 0x%x\r\n",HW_OCOTP_CUSTCAP_RD());
 
-    initLCD_IO();
-    initLCD_Para();
+    //initLCD_IO();
+    //initLCD_Para();
 //    initLCD_Para2();
-//    testLCD();
+
+    //testLCD();
 //    testLCD2();
 	if ((HW_OCOTP_CUSTCAP_RD() & 0x30000000) > 0) {
 		/*EVK board*/
@@ -1105,146 +1106,7 @@ void delayMs(int ms)
     delay(ms*1000);
 }
 
-void initLCD_Para(void)
-{
-
-    LCD_RESET_1;
-    LCD_SCK_1;
-    LCD_SDI_1;
-    LCD_SDO_1;
-    LCD_CS_1;
-
-    delayMs(2);
-    LCD_RESET_1;
-    delayMs(20);
-    LCD_RESET_0;
-    delayMs(10);
-    LCD_RESET_1;
-    delayMs(220);
-
-    printf("tttttttttttt --- 8  \r\n");
-    LCD_RegisterIndex(0x11);    // 退出睡眠模式
-//        Delay(120);
-    delayMs(500);
-
-    printf("tttttttttttt --- 9  \r\n");
-    LCD_WR_REG(0xCF);
-        LCD_WR_DATA(0x00);
-        LCD_WR_DATA(0xC1);
-        LCD_WR_DATA(0X30);
-        LCD_WR_REG(0xED);
-        LCD_WR_DATA(0x64);
-        LCD_WR_DATA(0x03);
-        LCD_WR_DATA(0X12);
-        LCD_WR_DATA(0X81);
-        LCD_WR_REG(0xE8);
-        LCD_WR_DATA(0x85);
-        LCD_WR_DATA(0x10);
-        LCD_WR_DATA(0x7A);
-        LCD_WR_REG(0xCB);
-        LCD_WR_DATA(0x39);
-        LCD_WR_DATA(0x2C);
-        LCD_WR_DATA(0x00);
-        LCD_WR_DATA(0x34);
-        LCD_WR_DATA(0x02);
-        LCD_WR_REG(0xF7);
-        LCD_WR_DATA(0x20);
-        LCD_WR_REG(0xEA);
-        LCD_WR_DATA(0x00);
-        LCD_WR_DATA(0x00);
-        LCD_WR_REG(0xC0);    //Power control
-        LCD_WR_DATA(0x1B);   //VRH[5:0]
-        LCD_WR_REG(0xC1);    //Power control
-        LCD_WR_DATA(0x01);   //SAP[2:0];BT[3:0]
-        LCD_WR_REG(0xC5);    //VCM control
-        LCD_WR_DATA(0x30); 	 //3F
-        LCD_WR_DATA(0x30); 	 //3C
-        LCD_WR_REG(0xC7);    //VCM control2
-        LCD_WR_DATA(0XB7);
-
-        LCD_WR_REG(0x36);    // Memory Access Control
-        LCD_WR_DATA(0x08);
-
-        LCD_WR_REG(0x3A);
-        LCD_WR_DATA(0x55);
-
-        LCD_WR_REG(0xB1);
-        LCD_WR_DATA(0x00);
-        LCD_WR_DATA(0x1A);
-
-        LCD_WR_REG(0xB6);    // Display Function Control
-        LCD_WR_DATA(0x0A);
-        LCD_WR_DATA(0xA2);
-
-        LCD_WR_REG(0xF2);    // 3Gamma Function Disable
-        LCD_WR_DATA(0x00);
-        LCD_WR_REG(0x26);    //Gamma curve selectednto GR
-        LCD_WR_DATA(0x01);
-
-        LCD_WR_REG(0xE0);    //Set Gamma
-        LCD_WR_DATA(0x0F);
-        LCD_WR_DATA(0x2A);
-        LCD_WR_DATA(0x28);
-        LCD_WR_DATA(0x08);
-        LCD_WR_DATA(0x0E);
-        LCD_WR_DATA(0x08);
-        LCD_WR_DATA(0x54);
-        LCD_WR_DATA(0XA9);
-        LCD_WR_DATA(0x43);
-        LCD_WR_DATA(0x0A);
-        LCD_WR_DATA(0x0F);
-        LCD_WR_DATA(0x00);
-        LCD_WR_DATA(0x00);
-        LCD_WR_DATA(0x00);
-        LCD_WR_DATA(0x00);
-
-        LCD_WR_REG(0XE1);    //Set Gamma
-        LCD_WR_DATA(0x00);
-        LCD_WR_DATA(0x15);
-        LCD_WR_DATA(0x17);
-        LCD_WR_DATA(0x07);
-        LCD_WR_DATA(0x11);
-        LCD_WR_DATA(0x06);
-        LCD_WR_DATA(0x2B);
-        LCD_WR_DATA(0x56);
-        LCD_WR_DATA(0x3C);
-        LCD_WR_DATA(0x05);
-        LCD_WR_DATA(0x10);
-        LCD_WR_DATA(0x0F);
-        LCD_WR_DATA(0x3F);
-        LCD_WR_DATA(0x3F);
-        LCD_WR_DATA(0x0F);
-
-
-        LCD_WR_REG(0xf6);//
-        LCD_WR_DATA(0x01);
-        LCD_WR_DATA(0x00);
-        LCD_WR_DATA(0x06);
-
-        LCD_WR_REG(0xB0);//
-        LCD_WR_DATA(0xe0);//
-
-        LCD_WR_REG(0x2A);
-        LCD_WR_DATA(0x00);
-        LCD_WR_DATA(0x00);
-        LCD_WR_DATA(0x00);
-        LCD_WR_DATA(0xef);
-        LCD_WR_REG(0x2B);
-        LCD_WR_DATA(0x00);
-        LCD_WR_DATA(0x00);
-        LCD_WR_DATA(0x01);
-        LCD_WR_DATA(0x3f);
-
-        LCD_WR_REG(0x11); //Exit Sleep
-//        msleep(120);
-        delayMs(120);
-        printf("tttttttttttt --- b  \r\n");
-        LCD_WR_REG(0x29); //display on
-
-}
-
-//#define LCD_RegisterIndex LCD_WR_REG
-//#define LCD_RegisterValue LCD_WR_DATA
+/*
 void initLCD_Para2()
 {
 
@@ -1413,9 +1275,9 @@ void initLCD_Para2()
     LCD_RegisterValue(0x3F);
 
     LCD_RegisterIndex(0x2C); //GRAM start writing
-    */
+    
 }
-
+*/
 /* kiss gcc's ass to make it happy */
 void __aeabi_unwind_cpp_pr0() {}
 void __aeabi_unwind_cpp_pr1() {}
