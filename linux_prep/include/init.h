@@ -20,6 +20,15 @@
 #ifndef __INIT_H
 #define __INIT_H
 
+struct linux_logo {
+	int type;			/* one of LINUX_LOGO_* */
+	unsigned int width;
+	unsigned int height;
+	unsigned int clutsize;		/* LINUX_LOGO_CLUT224 only */
+	const unsigned char *clut;	/* LINUX_LOGO_CLUT224 only */
+	const unsigned char *data;
+};
+
 typedef void (*hwinitcall_t)(void);
 
 #define hw_initcall(fn) \

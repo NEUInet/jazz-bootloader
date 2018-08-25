@@ -8,6 +8,7 @@ sources {
 	sdram_prep="./boot_prep/boot_prep";
 	linux_prep="./linux_prep/output-target/linux_prep";
 	zImage = "./zImage";
+        logo = "./b.bin";
 }
 
 section (0) {
@@ -23,7 +24,8 @@ section (0) {
 	//----------------------------------------------------------
 	load sdram_prep;
 	call sdram_prep;
-
+                
+        load logo > 0x40800000;
 	//----------------------------------------------------------
 	// Prepare to boot Linux
 	//----------------------------------------------------------
